@@ -567,7 +567,7 @@
   }
 }
 
-  aasync function saveLocalProfile() {
+ async function saveLocalProfile() {
   if (!currentUser) return;
 
   const username = $("username").value.trim();
@@ -662,7 +662,7 @@
 
     $("saveProfileButton").addEventListener("click", saveLocalProfile);
 
-    onAuthStateChanged(auth, async user => {
+   onAuthStateChanged(auth, async user => {
   currentUser = user;
 
   if (!user) {
@@ -678,28 +678,21 @@
 
   $("profileEmail").textContent = user.email || "";
 
-  // A nevet a Firestore-ból töltjük be.
+  const avatar = $("profileAvatar");
+  const headerAvatar = $("headerAvatar");
+
+  if (user.photoURL) {
+    avatar.src = user.photoURL;
+    headerAvatar.src = user.photoURL;
+    headerAvatar.classList.remove("hidden");
+  } else {
+    avatar.removeAttribute("src");
+    headerAvatar.classList.add("hidden");
+  }
+
   await loadLocalProfile(user);
-
-  // A meglévő profilkép-kezelésed maradjon itt,
-  // a többi eredeti kódoddal együtt.
+  setStatus(loginStatus, "Sikeres bejelentkezés.");
 });
-
-      const avatar = $("profileAvatar");
-      const headerAvatar = $("headerAvatar");
-
-      if (user.photoURL) {
-        avatar.src = user.photoURL;
-        headerAvatar.src = user.photoURL;
-        headerAvatar.classList.remove("hidden");
-      } else {
-        avatar.removeAttribute("src");
-        headerAvatar.classList.add("hidden");
-      }
-
-      await loadLocalProfile(user);
-      setStatus(loginStatus, "Sikeres bejelentkezés.");
-    });
 
     applyTheme();
   </script>
