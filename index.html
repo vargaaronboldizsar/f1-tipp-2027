@@ -340,17 +340,20 @@
               </div>
             </div>
 
-            <div class="field">
-              <label for="displayName">Megjelenített név</label>
-              <input id="displayName" maxlength="32" placeholder="Pl. Áron">
-              <div class="field-help">Ezt a nevet láthatják majd a ranglistákon.</div>
-            </div>
 
-            <div class="field">
-              <label for="username">Felhasználónév</label>
-              <input id="username" maxlength="20" placeholder="pl. apex_aron" autocomplete="nickname">
-              <div class="field-help">Csak betűk, számok és aláhúzás ajánlott. Az egyediséget később ellenőrizzük.</div>
-            </div>
+
+           <div class="field">
+  <label for="username">Felhasználónév</label>
+  <input
+    id="username"
+    maxlength="20"
+    placeholder="Pl. ApexAron"
+    autocomplete="nickname"
+  >
+  <div class="field-help">
+    Ez a név jelenik meg majd a ranglistán. 3–20 karakter, betűk, számok és aláhúzás.
+  </div>
+</div>
 
             <div class="field">
               <label>Kedvenc csapat</label>
@@ -520,26 +523,21 @@
     if (profileSnap.exists()) {
       saved = profileSnap.data();
     } else {
-      // Ha még nincs felhőprofil, megpróbáljuk
-      // átvenni a korábbi helyi beállításokat.
       try {
         saved = JSON.parse(localStorage.getItem(key) || "{}") || {};
       } catch {
         saved = {};
       }
-
-      await setDoc(profileRef, {
-        displayName: saved.displayName || user.displayName || "",
-        username: saved.username || "",
-        team: saved.team || "ferrari",
-        themeMode: saved.themeMode || "team"
-      });
     }
 
-    $("displayName").value =
-      saved.displayName || user.displayName || "";
+    // Régi profiloknál először a username-t használjuk,
+    // és csak utána a korábbi displayName mezőt.
+    const username =
+      saved.username || saved.displayName || user.displayName || "";
 
-    $("username").value = saved.username || "";
+    $("username").value = username;
+    $("profileName").textContent = username || "Versenyző";
+    $("profileEmail").textContent = user.email || "";
 
     selectedTeam = TEAMS.some(team => team.id === saved.team)
       ? saved.team
@@ -549,11 +547,18 @@
       ? "standard"
       : "team";
 
+    // Egységesítjük a felhőben tárolt profilt.
+    await setDoc(profileRef, {
+      username,
+      team: selectedTeam,
+      themeMode,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+
     applyTheme();
     setStatus(profileStatus, "Profil betöltve a felhőből.");
   } catch (error) {
     console.error("Profilbetöltési hiba:", error);
-
     setStatus(
       profileStatus,
       "Nem sikerült betölteni a profilt: " + error.message,
@@ -562,19 +567,12 @@
   }
 }
 
-  async function saveLocalProfile() {
+  aasync function saveLocalProfile() {
   if (!currentUser) return;
 
-  const displayName = $("displayName").value.trim();
   const username = $("username").value.trim();
 
-  if (!displayName) {
-    setStatus(profileStatus, "Adj meg egy megjelenített nevet.", true);
-    $("displayName").focus();
-    return;
-  }
-
-  if (username && !/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
     setStatus(
       profileStatus,
       "A felhasználónév 3–20 karakter legyen: betűk, számok, aláhúzás.",
@@ -589,7 +587,6 @@
   setStatus(profileStatus, "Profil mentése a felhőbe…");
 
   const data = {
-    displayName,
     username,
     team: selectedTeam,
     themeMode,
@@ -597,22 +594,22 @@
   };
 
   try {
-    await setDoc(doc(db, "users", currentUser.uid), data, {
-      merge: true
-    });
+    await setDoc(
+      doc(db, "users", currentUser.uid),
+      data,
+      { merge: true }
+    );
 
-    // Helyi másolat is marad a gyorsabb betöltéshez.
     localStorage.setItem(
       "apex-f1-profile-" + currentUser.uid,
       JSON.stringify(data)
     );
 
-    $("profileName").textContent = displayName;
+    $("profileName").textContent = username;
 
     setStatus(profileStatus, "Beállítások elmentve a felhőbe.");
   } catch (error) {
     console.error("Profilmentési hiba:", error);
-
     setStatus(
       profileStatus,
       "Nem sikerült menteni: " + error.message,
@@ -666,21 +663,27 @@
     $("saveProfileButton").addEventListener("click", saveLocalProfile);
 
     onAuthStateChanged(auth, async user => {
-      currentUser = user;
+  currentUser = user;
 
-      if (!user) {
-        loginCard.classList.remove("hidden");
-        profileCard.classList.add("hidden");
-        $("headerAvatar").classList.add("hidden");
-        setStatus(loginStatus, "Biztonságos bejelentkezés Google-fiókkal.");
-        return;
-      }
+  if (!user) {
+    loginCard.classList.remove("hidden");
+    profileCard.classList.add("hidden");
+    $("headerAvatar").classList.add("hidden");
+    setStatus(loginStatus, "Biztonságos bejelentkezés Google-fiókkal.");
+    return;
+  }
 
-      loginCard.classList.add("hidden");
-      profileCard.classList.remove("hidden");
+  loginCard.classList.add("hidden");
+  profileCard.classList.remove("hidden");
 
-      $("profileName").textContent = user.displayName || "Versenyző";
-      $("profileEmail").textContent = user.email || "";
+  $("profileEmail").textContent = user.email || "";
+
+  // A nevet a Firestore-ból töltjük be.
+  await loadLocalProfile(user);
+
+  // A meglévő profilkép-kezelésed maradjon itt,
+  // a többi eredeti kódoddal együtt.
+});
 
       const avatar = $("profileAvatar");
       const headerAvatar = $("headerAvatar");
