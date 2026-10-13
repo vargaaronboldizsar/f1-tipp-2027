@@ -402,6 +402,9 @@
       setPersistence, browserLocalPersistence,
       onAuthStateChanged, signOut
     } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+    import {
+  getFirestore, doc, getDoc, setDoc
+} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
    const firebaseConfig = {
   apiKey: "AIzaSyBb-ZNy-Nvsjir_ndT1dB_xX4ajZrbTd08",
@@ -414,6 +417,7 @@
     
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
     const STANDARD_COLOR = "#e10600";
@@ -504,55 +508,120 @@
       });
     }
 
-    function loadLocalProfile(user) {
-      const key = "apex-f1-profile-" + user.uid;
-      let saved = {};
+    async function loadLocalProfile(user) {
+  const key = "apex-f1-profile-" + user.uid;
 
+  try {
+    const profileRef = doc(db, "users", user.uid);
+    const profileSnap = await getDoc(profileRef);
+
+    let saved = {};
+
+    if (profileSnap.exists()) {
+      saved = profileSnap.data();
+    } else {
+      // Ha még nincs felhőprofil, megpróbáljuk
+      // átvenni a korábbi helyi beállításokat.
       try {
         saved = JSON.parse(localStorage.getItem(key) || "{}") || {};
       } catch {
         saved = {};
       }
 
-      $("displayName").value = saved.displayName || user.displayName || "";
-      $("username").value = saved.username || "";
-      selectedTeam = TEAMS.some(team => team.id === saved.team)
-        ? saved.team : "ferrari";
-      themeMode = saved.themeMode === "standard" ? "standard" : "team";
-
-      applyTheme();
-      setStatus(profileStatus, "A profilbeállítások ezen az eszközön tárolódnak.");
+      await setDoc(profileRef, {
+        displayName: saved.displayName || user.displayName || "",
+        username: saved.username || "",
+        team: saved.team || "ferrari",
+        themeMode: saved.themeMode || "team"
+      });
     }
 
-    function saveLocalProfile() {
-      if (!currentUser) return;
+    $("displayName").value =
+      saved.displayName || user.displayName || "";
 
-      const displayName = $("displayName").value.trim();
-      const username = $("username").value.trim();
+    $("username").value = saved.username || "";
 
-      if (!displayName) {
-        setStatus(profileStatus, "Adj meg egy megjelenített nevet.", true);
-        $("displayName").focus();
-        return;
-      }
+    selectedTeam = TEAMS.some(team => team.id === saved.team)
+      ? saved.team
+      : "ferrari";
 
-      if (username && !/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
-        setStatus(profileStatus, "A felhasználónév 3–20 karakter legyen: betűk, számok, aláhúzás.", true);
-        $("username").focus();
-        return;
-      }
+    themeMode = saved.themeMode === "standard"
+      ? "standard"
+      : "team";
 
-      const key = "apex-f1-profile-" + currentUser.uid;
-      const data = { displayName, username, team: selectedTeam, themeMode };
+    applyTheme();
+    setStatus(profileStatus, "Profil betöltve a felhőből.");
+  } catch (error) {
+    console.error("Profilbetöltési hiba:", error);
 
-      try {
-        localStorage.setItem(key, JSON.stringify(data));
-        $("profileName").textContent = displayName;
-        setStatus(profileStatus, "Beállítások mentve ezen az eszközön.");
-      } catch {
-        setStatus(profileStatus, "A böngésző nem engedte a mentést.", true);
-      }
-    }
+    setStatus(
+      profileStatus,
+      "Nem sikerült betölteni a profilt: " + error.message,
+      true
+    );
+  }
+}
+
+  async function saveLocalProfile() {
+  if (!currentUser) return;
+
+  const displayName = $("displayName").value.trim();
+  const username = $("username").value.trim();
+
+  if (!displayName) {
+    setStatus(profileStatus, "Adj meg egy megjelenített nevet.", true);
+    $("displayName").focus();
+    return;
+  }
+
+  if (username && !/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+    setStatus(
+      profileStatus,
+      "A felhasználónév 3–20 karakter legyen: betűk, számok, aláhúzás.",
+      true
+    );
+    $("username").focus();
+    return;
+  }
+
+  const saveButton = $("saveProfileButton");
+  saveButton.disabled = true;
+  setStatus(profileStatus, "Profil mentése a felhőbe…");
+
+  const data = {
+    displayName,
+    username,
+    team: selectedTeam,
+    themeMode,
+    updatedAt: new Date().toISOString()
+  };
+
+  try {
+    await setDoc(doc(db, "users", currentUser.uid), data, {
+      merge: true
+    });
+
+    // Helyi másolat is marad a gyorsabb betöltéshez.
+    localStorage.setItem(
+      "apex-f1-profile-" + currentUser.uid,
+      JSON.stringify(data)
+    );
+
+    $("profileName").textContent = displayName;
+
+    setStatus(profileStatus, "Beállítások elmentve a felhőbe.");
+  } catch (error) {
+    console.error("Profilmentési hiba:", error);
+
+    setStatus(
+      profileStatus,
+      "Nem sikerült menteni: " + error.message,
+      true
+    );
+  } finally {
+    saveButton.disabled = false;
+  }
+}
 
     loginButton.addEventListener("click", async () => {
       loginButton.disabled = true;
@@ -596,7 +665,7 @@
 
     $("saveProfileButton").addEventListener("click", saveLocalProfile);
 
-    onAuthStateChanged(auth, user => {
+    onAuthStateChanged(auth, async user => {
       currentUser = user;
 
       if (!user) {
@@ -625,7 +694,7 @@
         headerAvatar.classList.add("hidden");
       }
 
-      loadLocalProfile(user);
+      await loadLocalProfile(user);
       setStatus(loginStatus, "Sikeres bejelentkezés.");
     });
 
