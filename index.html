@@ -4,73 +4,395 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#10141c">
-  <title>F1 Tipp 2027</title>
+  <meta name="theme-color" content="#0b0d10">
+  <title>APEX — F1 Tipp 2027</title>
+
   <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0d10;
+      --surface: #12151a;
+      --surface-2: #191d24;
+      --border: #292e37;
+      --text: #f5f6f8;
+      --muted: #929aa7;
+      --accent: #e10600;
+      --accent-text: #ffffff;
+      --accent-soft: color-mix(in srgb, var(--accent) 13%, transparent);
+      --radius: 16px;
+    }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      background: #10141c;
-      color: #f5f7fa;
-      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(ellipse at 50% -20%, var(--accent-soft), transparent 55%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      transition: background .3s ease;
     }
-    .panel {
-      width: 100%;
-      max-width: 460px;
-      padding: 36px 28px;
-      border: 1px solid #303b4b;
-      border-radius: 20px;
-      background: #1a2230;
-      text-align: center;
-      box-shadow: 0 20px 60px #0005;
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
     }
-    .flag { font-size: 42px; }
-    h1 { margin: 12px 0; font-size: 30px; }
-    h1 span { color: #ff4545; }
-    .subtitle { color: #b9c4d3; line-height: 1.6; }
-    button {
-      width: 100%;
-      margin-top: 24px;
-      padding: 15px;
-      border: 0;
-      border-radius: 10px;
-      background: #fff;
-      color: #202124;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
+
+    .shell { max-width: 1160px; margin: auto; padding: 0 28px 48px; }
+
+    header {
+      min-height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid var(--border);
     }
-    button:disabled { opacity: .6; cursor: wait; }
-    #status { min-height: 24px; margin-top: 18px; color: #c6d0df; }
-    #profile { display: none; margin-top: 22px; }
-    #avatar { width: 72px; height: 72px; border-radius: 50%; }
-    .secondary { background: #303b4b; color: white; margin-top: 12px; }
+
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark {
+      width: 42px; height: 42px; border-radius: 12px;
+      display: grid; place-items: center;
+      background: var(--accent); color: var(--accent-text);
+      font-size: 21px; font-weight: 900; font-style: italic;
+      transition: background .25s ease, color .25s ease;
+    }
+    .brand-name { font-size: 17px; font-weight: 850; letter-spacing: -.7px; }
+    .brand-sub { color: var(--muted); font-size: 10px; letter-spacing: 1.8px; }
+
+    .top-right { display: flex; align-items: center; gap: 12px; }
+    .season-pill {
+      padding: 7px 10px; border: 1px solid var(--border);
+      border-radius: 7px; color: var(--muted); font-size: 11px;
+      letter-spacing: 1px;
+    }
+    .avatar-small {
+      width: 36px; height: 36px; border-radius: 50%;
+      object-fit: cover; border: 1px solid var(--border);
+    }
+
+    .hero { padding: 68px 0 42px; max-width: 790px; }
+    .eyebrow {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--accent); font-size: 11px; font-weight: 800;
+      letter-spacing: 2px; text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 22px; height: 2px; background: var(--accent); }
+    h1 {
+      margin: 18px 0 16px; font-size: clamp(42px, 7vw, 76px);
+      line-height: .99; letter-spacing: -4px; font-weight: 850;
+    }
+    h1 span { color: var(--accent); }
+    .hero-copy { max-width: 520px; color: var(--muted); font-size: 16px; line-height: 1.8; }
+
+    .layout {
+      display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(300px, .85fr);
+      gap: 18px; align-items: start;
+    }
+
+    .card {
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: rgba(18, 21, 26, .92); overflow: hidden;
+    }
+    .card-head {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; padding: 20px 22px; border-bottom: 1px solid var(--border);
+    }
+    .card-title { font-size: 14px; font-weight: 750; }
+    .card-kicker { margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .card-body { padding: 22px; }
+
+    .status-dot {
+      display: inline-block; width: 7px; height: 7px; margin-right: 7px;
+      border-radius: 50%; background: #54d69b;
+      box-shadow: 0 0 12px #54d69b66;
+    }
+
+    .google-btn, .primary-btn, .secondary-btn {
+      width: 100%; min-height: 49px; padding: 13px 16px;
+      border-radius: 10px; font-weight: 750;
+      transition: transform .15s ease, background .2s ease, border-color .2s ease;
+    }
+    .google-btn:hover, .primary-btn:hover, .secondary-btn:hover { transform: translateY(-1px); }
+    .google-btn {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      background: #f5f6f8; color: #17191d; border: 1px solid #f5f6f8;
+    }
+    .google-g { font-size: 20px; font-weight: 900; color: #4285f4; }
+    .primary-btn {
+      background: var(--accent); color: var(--accent-text); border: 1px solid var(--accent);
+    }
+    .secondary-btn {
+      background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+    }
+    button:disabled { opacity: .6; cursor: wait; transform: none; }
+
+    .status { min-height: 22px; margin-top: 14px; color: var(--muted); font-size: 12px; }
+    .status.error { color: #ff827e; }
+    .fine-print { margin: 18px 0 0; text-align: center; color: var(--muted); font-size: 11px; }
+
+    .feature-list { display: grid; gap: 0; }
+    .feature {
+      display: flex; gap: 14px; padding: 17px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .feature:last-child { border-bottom: 0; padding-bottom: 0; }
+    .feature-icon {
+      flex: 0 0 38px; height: 38px; display: grid; place-items: center;
+      border: 1px solid var(--border); background: var(--surface-2);
+      border-radius: 10px; font-size: 17px;
+    }
+    .feature-name { font-weight: 700; }
+    .feature-copy { color: var(--muted); font-size: 12px; margin-top: 3px; }
+
+    .profile-top { display: flex; align-items: center; gap: 16px; }
+    .profile-avatar {
+      width: 66px; height: 66px; border-radius: 50%;
+      object-fit: cover; border: 2px solid var(--accent);
+      background: var(--surface-2);
+    }
+    .profile-name { font-size: 20px; font-weight: 800; letter-spacing: -.5px; }
+    .profile-email { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+    .member-tag {
+      display: inline-block; margin-top: 7px; padding: 4px 7px;
+      border-radius: 5px; background: var(--accent-soft);
+      color: var(--accent); font-size: 10px; font-weight: 800; letter-spacing: 1px;
+    }
+
+    .field { margin-top: 22px; }
+    .field label {
+      display: block; margin-bottom: 8px; font-size: 12px;
+      font-weight: 750; color: #d7dbe2;
+    }
+    .field input, .field select {
+      width: 100%; min-height: 46px; padding: 12px 13px;
+      background: #0d1014; color: var(--text);
+      border: 1px solid var(--border); border-radius: 9px;
+    }
+    .field input::placeholder { color: #646d79; }
+    .field-help { color: var(--muted); font-size: 11px; margin-top: 7px; }
+
+    .theme-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .theme-option {
+      display: flex; align-items: center; gap: 10px; padding: 12px;
+      background: #0d1014; border: 1px solid var(--border);
+      border-radius: 10px; text-align: left; color: var(--text);
+    }
+    .theme-option.active { border-color: var(--accent); background: var(--accent-soft); }
+    .swatch { width: 19px; height: 19px; flex: 0 0 19px; border-radius: 6px; }
+    .theme-label { font-size: 12px; font-weight: 750; }
+    .theme-description { font-size: 10px; color: var(--muted); }
+
+    .team-grid {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px;
+    }
+    .team-option {
+      min-width: 0; display: flex; align-items: center; gap: 10px;
+      padding: 12px 10px; background: #0d1014;
+      color: var(--text); border: 1px solid var(--border); border-radius: 10px;
+      text-align: left; transition: border-color .2s ease, background .2s ease;
+    }
+    .team-option:hover { border-color: #646d79; }
+    .team-option.active { border-color: var(--team-color); background: color-mix(in srgb, var(--team-color) 11%, #0d1014); }
+    .team-swatch { width: 4px; height: 28px; border-radius: 4px; background: var(--team-color); flex: 0 0 4px; }
+    .team-name { font-size: 12px; font-weight: 750; }
+    .team-sub { font-size: 10px; color: var(--muted); }
+
+    .settings-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
+    .settings-actions button { margin: 0; min-height: 44px; padding: 10px; font-size: 12px; }
+    .save-note { min-height: 18px; margin-top: 12px; color: var(--muted); font-size: 11px; }
+
+    .bottom-note {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding-top: 30px; color: #626b78; font-size: 10px;
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .hidden { display: none !important; }
+
+    @media (max-width: 760px) {
+      .shell { padding: 0 17px 32px; }
+      header { min-height: 70px; }
+      .season-pill { display: none; }
+      .hero { padding: 48px 0 30px; }
+      h1 { letter-spacing: -2.5px; }
+      .hero-copy { font-size: 14px; }
+      .layout { grid-template-columns: 1fr; }
+      .card-head { padding: 17px; }
+      .card-body { padding: 17px; }
+      .bottom-note { flex-wrap: wrap; }
+    }
+
+    @media (max-width: 370px) {
+      .team-grid { grid-template-columns: 1fr; }
+      .theme-options { grid-template-columns: 1fr; }
+      .brand-name { font-size: 15px; }
+      .brand-sub { font-size: 9px; letter-spacing: 1px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
   </style>
 </head>
+
 <body>
-  <main class="panel">
-    <div class="flag">🏎️</div>
-    <h1>F1 TIPP <span>2027</span></h1>
-    <p class="subtitle">
-      A saját bajnokságod. A saját tippjeid.<br>
-      Jelentkezz be, és készülj a rajtra!
-    </p>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div>
+          <div class="brand-name">APEX <span style="color:var(--accent)">/</span> F1 TIPP</div>
+          <div class="brand-sub">THE 2027 SEASON</div>
+        </div>
+      </div>
+      <div class="top-right">
+        <div class="season-pill">SEASON 2027</div>
+        <img id="headerAvatar" class="avatar-small hidden" alt="Profilkép">
+      </div>
+    </header>
 
-    <button id="login">Folytatás Google-fiókkal</button>
-    <div id="status" role="status">Betöltés…</div>
+    <main>
+      <section class="hero">
+        <div class="eyebrow">Your season starts here</div>
+        <h1>Think fast.<br><span>Tip smarter.</span></h1>
+        <p class="hero-copy">
+          Minden futam egy új lehetőség. Építsd fel a saját profilodat,
+          válaszd ki a csapatodat, és készülj a 2027-es szezonra.
+        </p>
+      </section>
 
-    <section id="profile">
-      <img id="avatar" alt="Profilkép">
-      <h2 id="name"></h2>
-      <p id="email"></p>
-      <p class="subtitle">Sikeresen bejelentkeztél!</p>
-      <button id="logout" class="secondary">Kijelentkezés</button>
-    </section>
-  </main>
+      <div class="layout">
+        <section class="card" id="loginCard">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Belépés a paddockba</div>
+              <div class="card-kicker">A következő szezon a rajtrácson kezdődik.</div>
+            </div>
+            <span style="font-size:22px" aria-hidden="true">↗</span>
+          </div>
+          <div class="card-body">
+            <button class="google-btn" id="loginButton">
+              <span class="google-g">G</span>
+              Folytatás Google-fiókkal
+            </button>
+            <div id="loginStatus" class="status" role="status">
+              Biztonságos bejelentkezés Google-fiókkal.
+            </div>
+            <p class="fine-print">Nincs külön jelszó. Bármikor kijelentkezhetsz.</p>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">A te versenyed. A te szabályaid.</div>
+              <div class="card-kicker">A profilod alapjai</div>
+            </div>
+          </div>
+          <div class="card-body feature-list">
+            <div class="feature">
+              <div class="feature-icon">◉</div>
+              <div>
+                <div class="feature-name">Saját versenyzői profil</div>
+                <div class="feature-copy">Név, profilkép és egyedi megjelenés.</div>
+              </div>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">◈</div>
+              <div>
+                <div class="feature-name">Csapatszínű felület</div>
+                <div class="feature-copy">A kedvenc csapatod színei, vagy a standard piros.</div>
+              </div>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">⌁</div>
+              <div>
+                <div class="feature-name">Készen a rajtra</div>
+                <div class="feature-copy">Később tippek, pontok és ranglisták is érkeznek.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card hidden" id="profileCard">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Versenyzői profil</div>
+              <div class="card-kicker">Állítsd be a saját paddock-identitásodat.</div>
+            </div>
+            <span style="color:var(--accent);font-size:11px;font-weight:800">PROFILE</span>
+          </div>
+
+          <div class="card-body">
+            <div class="profile-top">
+              <img id="profileAvatar" class="profile-avatar" alt="Google-profilkép">
+              <div style="min-width:0">
+                <div id="profileName" class="profile-name">Versenyző</div>
+                <div id="profileEmail" class="profile-email"></div>
+                <div class="member-tag">2027 GRID MEMBER</div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="displayName">Megjelenített név</label>
+              <input id="displayName" maxlength="32" placeholder="Pl. Áron">
+              <div class="field-help">Ezt a nevet láthatják majd a ranglistákon.</div>
+            </div>
+
+            <div class="field">
+              <label for="username">Felhasználónév</label>
+              <input id="username" maxlength="20" placeholder="pl. apex_aron" autocomplete="nickname">
+              <div class="field-help">Csak betűk, számok és aláhúzás ajánlott. Az egyediséget később ellenőrizzük.</div>
+            </div>
+
+            <div class="field">
+              <label>Kedvenc csapat</label>
+              <div class="team-grid" id="teamGrid"></div>
+            </div>
+
+            <div class="field">
+              <label>Felület színezése</label>
+              <div class="theme-options">
+                <button type="button" class="theme-option" id="teamThemeButton">
+                  <span class="swatch" id="teamThemeSwatch"></span>
+                  <span>
+                    <span class="theme-label" style="display:block">Csapat színei</span>
+                    <span class="theme-description">Személyre szabva</span>
+                  </span>
+                </button>
+                <button type="button" class="theme-option" id="standardThemeButton">
+                  <span class="swatch" style="background:#e10600"></span>
+                  <span>
+                    <span class="theme-label" style="display:block">Standard piros</span>
+                    <span class="theme-description">Az alap APEX-téma</span>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-actions">
+              <button id="saveProfileButton" class="primary-btn">Beállítások mentése</button>
+              <button id="logoutButton" class="secondary-btn">Kijelentkezés</button>
+            </div>
+            <div id="profileStatus" class="save-note" role="status"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="bottom-note">
+      <span>APEX / F1 TIPP 2027</span>
+      <span>Built for the grid.</span>
+      <span>Unofficial fan project</span>
+    </footer>
+  </div>
 
   <script type="module">
     import { initializeApp } from
@@ -82,7 +404,7 @@
     } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBb-ZNy-Nvsjir_ndT1dB_xX4ajZrbTd08",
+      apiKey: "AIzaSyBb-ZNy-Nvsjir_nd1T1dB_xX4ajZrbTd08",
       authDomain: "f1-tipp-2027.firebaseapp.com",
       projectId: "f1-tipp-2027",
       storageBucket: "f1-tipp-2027.firebasestorage.app",
@@ -94,53 +416,220 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    const loginButton = document.getElementById("login");
-    const logoutButton = document.getElementById("logout");
-    const status = document.getElementById("status");
-    const profile = document.getElementById("profile");
+    const STANDARD_COLOR = "#e10600";
+    const TEAMS = [
+      { id: "ferrari", name: "Ferrari", color: "#E8002D", text: "#FFFFFF", sub: "Scuderia Ferrari" },
+      { id: "mclaren", name: "McLaren", color: "#FF8000", text: "#171717", sub: "McLaren Racing" },
+      { id: "mercedes", name: "Mercedes", color: "#00A19C", text: "#071413", sub: "Mercedes-AMG" },
+      { id: "redbull", name: "Red Bull", color: "#3671C6", text: "#FFFFFF", sub: "Red Bull Racing" },
+      { id: "williams", name: "Williams", color: "#1868DB", text: "#FFFFFF", sub: "Williams Racing" },
+      { id: "astonmartin", name: "Aston Martin", color: "#229971", text: "#061B14", sub: "Aston Martin Aramco" },
+      { id: "alpine", name: "Alpine", color: "#FF87BC", text: "#25101B", sub: "BWT Alpine" },
+      { id: "racingbulls", name: "Racing Bulls", color: "#6692FF", text: "#09132B", sub: "Visa Cash App RB" },
+      { id: "sauber", name: "Sauber", color: "#52E252", text: "#101910", sub: "Sauber" },
+      { id: "haas", name: "Haas", color: "#B6BABD", text: "#151719", sub: "Haas F1 Team" }
+    ];
+
+    const $ = id => document.getElementById(id);
+    const loginButton = $("loginButton");
+    const loginCard = $("loginCard");
+    const profileCard = $("profileCard");
+    const loginStatus = $("loginStatus");
+    const profileStatus = $("profileStatus");
+    const teamGrid = $("teamGrid");
+
+    let currentUser = null;
+    let selectedTeam = "ferrari";
+    let themeMode = "team";
+
+    function getTeam(id) {
+      return TEAMS.find(team => team.id === id) || TEAMS[0];
+    }
+
+    function setStatus(element, message, isError = false) {
+      element.textContent = message;
+      element.classList.toggle("error", isError);
+    }
+
+    function applyTheme() {
+      const team = getTeam(selectedTeam);
+      const accent = themeMode === "team" ? team.color : STANDARD_COLOR;
+      const text = themeMode === "team" ? team.text : "#ffffff";
+
+      document.documentElement.style.setProperty("--accent", accent);
+      document.documentElement.style.setProperty("--accent-text", text);
+      $("teamThemeSwatch").style.background = team.color;
+
+      $("teamThemeButton").classList.toggle("active", themeMode === "team");
+      $("standardThemeButton").classList.toggle("active", themeMode === "standard");
+
+      document.querySelector('meta[name="theme-color"]').content = accent;
+      renderTeams();
+    }
+
+    function renderTeams() {
+      teamGrid.replaceChildren();
+
+      TEAMS.forEach(team => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "team-option" + (team.id === selectedTeam ? " active" : "");
+        button.style.setProperty("--team-color", team.color);
+        button.setAttribute("aria-pressed", String(team.id === selectedTeam));
+
+        const swatch = document.createElement("span");
+        swatch.className = "team-swatch";
+
+        const labels = document.createElement("span");
+        labels.style.minWidth = "0";
+
+        const name = document.createElement("span");
+        name.className = "team-name";
+        name.style.display = "block";
+        name.textContent = team.name;
+
+        const sub = document.createElement("span");
+        sub.className = "team-sub";
+        sub.style.display = "block";
+        sub.textContent = team.sub;
+
+        labels.append(name, sub);
+        button.append(swatch, labels);
+        button.addEventListener("click", () => {
+          selectedTeam = team.id;
+          applyTheme();
+          setStatus(profileStatus, "Csapat kiválasztva. Mentsd el a beállításokat!");
+        });
+        teamGrid.append(button);
+      });
+    }
+
+    function loadLocalProfile(user) {
+      const key = "apex-f1-profile-" + user.uid;
+      let saved = {};
+
+      try {
+        saved = JSON.parse(localStorage.getItem(key) || "{}") || {};
+      } catch {
+        saved = {};
+      }
+
+      $("displayName").value = saved.displayName || user.displayName || "";
+      $("username").value = saved.username || "";
+      selectedTeam = TEAMS.some(team => team.id === saved.team)
+        ? saved.team : "ferrari";
+      themeMode = saved.themeMode === "standard" ? "standard" : "team";
+
+      applyTheme();
+      setStatus(profileStatus, "A profilbeállítások ezen az eszközön tárolódnak.");
+    }
+
+    function saveLocalProfile() {
+      if (!currentUser) return;
+
+      const displayName = $("displayName").value.trim();
+      const username = $("username").value.trim();
+
+      if (!displayName) {
+        setStatus(profileStatus, "Adj meg egy megjelenített nevet.", true);
+        $("displayName").focus();
+        return;
+      }
+
+      if (username && !/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+        setStatus(profileStatus, "A felhasználónév 3–20 karakter legyen: betűk, számok, aláhúzás.", true);
+        $("username").focus();
+        return;
+      }
+
+      const key = "apex-f1-profile-" + currentUser.uid;
+      const data = { displayName, username, team: selectedTeam, themeMode };
+
+      try {
+        localStorage.setItem(key, JSON.stringify(data));
+        $("profileName").textContent = displayName;
+        setStatus(profileStatus, "Beállítások mentve ezen az eszközön.");
+      } catch {
+        setStatus(profileStatus, "A böngésző nem engedte a mentést.", true);
+      }
+    }
 
     loginButton.addEventListener("click", async () => {
       loginButton.disabled = true;
-      status.textContent = "Bejelentkezés folyamatban…";
+      setStatus(loginStatus, "Kapcsolódás a Google-fiókhoz…");
+
       try {
         await setPersistence(auth, browserLocalPersistence);
         await signInWithPopup(auth, provider);
       } catch (error) {
-        status.textContent = "Sikertelen belépés: " + error.message;
+        const messages = {
+          "auth/popup-closed-by-user": "A bejelentkezési ablak bezárult. Próbáld újra!",
+          "auth/popup-blocked": "A böngésző blokkolta a felugró ablakot. Engedélyezd, majd próbáld újra!",
+          "auth/unauthorized-domain": "Ez a domain nincs engedélyezve a Firebase Authentication beállításaiban.",
+          "auth/network-request-failed": "Hálózati hiba. Ellenőrizd az internetkapcsolatot!"
+        };
+        setStatus(loginStatus, messages[error.code] || ("Sikertelen belépés: " + error.message), true);
       } finally {
         loginButton.disabled = false;
       }
     });
 
-    logoutButton.addEventListener("click", async () => {
+    $("logoutButton").addEventListener("click", async () => {
       try {
         await signOut(auth);
       } catch (error) {
-        status.textContent = "Hiba kijelentkezéskor: " + error.message;
+        setStatus(profileStatus, "Hiba kijelentkezéskor: " + error.message, true);
       }
     });
 
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        loginButton.style.display = "none";
-        profile.style.display = "block";
-        document.getElementById("name").textContent =
-          user.displayName || "Versenyző";
-        document.getElementById("email").textContent = user.email || "";
-        const avatar = document.getElementById("avatar");
-        if (user.photoURL) {
-          avatar.src = user.photoURL;
-          avatar.style.display = "inline-block";
-        } else {
-          avatar.style.display = "none";
-        }
-        status.textContent = "Üdv a rajtrácson!";
-      } else {
-        loginButton.style.display = "block";
-        profile.style.display = "none";
-        status.textContent = "Még nem vagy bejelentkezve.";
-      }
+    $("teamThemeButton").addEventListener("click", () => {
+      themeMode = "team";
+      applyTheme();
+      setStatus(profileStatus, "A csapat színei aktívak. Mentsd el a beállításokat!");
     });
+
+    $("standardThemeButton").addEventListener("click", () => {
+      themeMode = "standard";
+      applyTheme();
+      setStatus(profileStatus, "A standard piros téma aktív. Mentsd el a beállításokat!");
+    });
+
+    $("saveProfileButton").addEventListener("click", saveLocalProfile);
+
+    onAuthStateChanged(auth, user => {
+      currentUser = user;
+
+      if (!user) {
+        loginCard.classList.remove("hidden");
+        profileCard.classList.add("hidden");
+        $("headerAvatar").classList.add("hidden");
+        setStatus(loginStatus, "Biztonságos bejelentkezés Google-fiókkal.");
+        return;
+      }
+
+      loginCard.classList.add("hidden");
+      profileCard.classList.remove("hidden");
+
+      $("profileName").textContent = user.displayName || "Versenyző";
+      $("profileEmail").textContent = user.email || "";
+
+      const avatar = $("profileAvatar");
+      const headerAvatar = $("headerAvatar");
+
+      if (user.photoURL) {
+        avatar.src = user.photoURL;
+        headerAvatar.src = user.photoURL;
+        headerAvatar.classList.remove("hidden");
+      } else {
+        avatar.removeAttribute("src");
+        headerAvatar.classList.add("hidden");
+      }
+
+      loadLocalProfile(user);
+      setStatus(loginStatus, "Sikeres bejelentkezés.");
+    });
+
+    applyTheme();
   </script>
 </body>
 </html>
